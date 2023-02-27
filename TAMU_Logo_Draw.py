@@ -1,6 +1,9 @@
 import rclpy
 from rclpy.node import Node
-from turtlesim.srv import Spawn
+from rclpy.parameter import Parameter
+from turtlesim.srv import Spawn,TeleportAbsolute
+from std_srvs.srv import Empty
+from rcl_interfaces.srv import SetParameters
 
 
 def spawn_request(node,client,x,y,theta,name):
@@ -28,9 +31,23 @@ def main(args=None):
 
     node = rclpy.create_node("Draw")
     #Have to create client in the main function for some reason
-    spawn_client = node.create_client(Spawn,'spawn')
-    spawn_request(node,spawn_client,30.0,30.0,180.0,"Turtle_T")
+    clear_client = node.create_client(Empty,'clear')
+    clear_request = Empty.Request()
+    clear_future = clear_client.call_async(clear_request)
+    rclpy.spin_until_future_complete(node,clear_future)
 
+    # maroon_client = node.create_client(SetParameters,'background_color')
+    # maroon_request = SetParameters.Request()
+    # red_param = Parameter('background_r',Parameter.Type.INTEGER,80)
+    # green_param = Parameter('background_g',Parameter.Type.INTEGER,0)
+    # blue_param = Parameter('background_b',Parameter.Type.INTEGER,0)
+    # maroon_request.parameters = {red_param,green_param,blue_param}
+    # maroon_future = maroon_client.call_async(maroon_request)
+    # rclpy.spin_until_future_complete(node,maroon_future)
+
+
+    spawn_client = node.create_client(Spawn,'spawn')
+    spawn_request(node,spawn_client,0.0,0.0,180.0,"Turtle_M")
     
     node.destroy_node()
 
