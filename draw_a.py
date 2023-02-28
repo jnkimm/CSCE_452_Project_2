@@ -39,6 +39,7 @@ A_points = [(1.4366,3.5794),
 
 
 T_points = [(4.19,1.956),
+            (4.19,1.956),
             (4.19,3.192),
             (4.88,3.192),
             (4.88,7.52),
@@ -58,6 +59,7 @@ T_points = [(4.19,1.956),
             (6.55,3.5794)]
 
 M_points = [(6.55,3.5794),
+            (6.55,3.5794),
             (6.55,4.123),
             (6.753,4.123),
             (6.753,5.884),
@@ -85,33 +87,13 @@ M_points = [(6.55,3.5794),
             (1,1)]
 
 Tri_points = [(2.765,4.996),
+            (2.765,4.996),
             (3.167,4.996),
             (2.966,5.465),
+            (2.765,4.996),
             (4.19,1.956)]
 
 ar = [A_points,Tri_points,T_points,M_points]
-
-
-
-# def spawn_request(node,client,x,y,theta,name):
-#     # client = node.create_client(Spawn,"spawn_client")
-#     while not client.wait_for_service(1.0):
-#        node.get_logger().warn("Waiting for service...")
-    
-#     request = Spawn.Request()
-#     request.x = x
-#     request.y = y
-#     request.theta = theta
-#     request.name = name
-
-#     client.call_async(request)
-    # rclpy.spin_until_future_complete(node,future)
-    
-    # response = future.result()
-    # if response is not None:
-    #     node.get_logger().info('Turtle "{}" spawned succesfully'.format(response.name))
-    # else:
-    #     node.get_logger().warn('Failed to spawn "{}"'.format(request.name))
 
 class Draw(Node):
     def __init__(self,point_arr):
@@ -156,6 +138,14 @@ class Draw(Node):
                 msg.linear.x = k_lin*dist
             else:
                 msg.linear.x = 0.0
+                if self.point_counter == 1:
+                    request = SetPen.Request()
+                    request.r = 255
+                    request.g = 255
+                    request.b = 255
+                    request.width = 3
+                    request.off = 0
+                    self.client_pen.call_async(request)
                 if self.point_counter == len(self.points[self.letter_counter])-2:                       # turn off pen
                     # client_pen = self.create_client(SetPen,"/turtle1/set_pen")
                     request = SetPen.Request()
@@ -173,6 +163,9 @@ class Draw(Node):
                 if(self.point_counter + 1 == len(self.points[self.letter_counter])):
                     self.letter_counter += 1
                     self.point_counter = 0
+                    request = SetPen.Request()
+                    request.off = 1
+                    self.client_pen.call_async(request)
                 self.point_counter += 1
         self.cmd_vel_pub.publish(msg)
 
@@ -183,21 +176,8 @@ def main(args=None):
     clear_client = node.create_client(Empty,'clear')
     clear_request = Empty.Request()
     clear_future = clear_client.call_async(clear_request)
-    # rclpy.spin_until_future_complete(node,clear_future)
-    
-    
-    
-    # spawn_client = node.create_client(Spawn,'spawn')
-    # spawn_request(node,spawn_client,3.0,3.0,180.0,"Turtle_T")
 
     rclpy.spin(node)
-    # print("Test")
-    # node_Tri = Draw(Tri_points)
-    # rclpy.spin(node_Tri)
-    # node_T = Draw(T_points)
-    # rclpy.spin(node_T)
-    # node_M = Draw(M_points)
-    # rclpy.spin(node_M)
     rclpy.shutdown()  
 
 if __name__ == '__main__':
